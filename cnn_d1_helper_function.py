@@ -3,22 +3,23 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_s
                              confusion_matrix, roc_auc_score, roc_curve)
 import matplotlib.pyplot as plt
 
-def train(cnn1d_model, train_loader, optimizer, loss_function):
+def train(cnn1d_model, train_loader, optimizer, loss_function): #, scheduler):
 
         cnn1d_model.train()  # Set model to training mode
-        train_loss = 0
+        train_loss = 0.0
         correct = 0
         total = 0
 
-        for x, y in train_loader:
+        for data, labels, _ in train_loader:
             # Zero the parameter gradients
             optimizer.zero_grad()
 
+            labels = labels.float()
             # Forward pass
-            outputs = cnn1d_model(x).squeeze()  # Squeeze to remove extra dimension
+            outputs = cnn1d_model(data).squeeze()  # Squeeze to remove extra dimension
 
             # Compute the loss
-            loss = loss_function(outputs, y.float())
+            loss = loss_function(outputs,labels)
             loss.backward()
 
             # Update weights
@@ -26,34 +27,37 @@ def train(cnn1d_model, train_loader, optimizer, loss_function):
 
             # Calculate accuracy
             predicted = (outputs >= 0.5).float()  # Convert probabilities to binary labels
-            correct += (predicted == y).sum().item()
-            total += y.size(0)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
 
             train_loss += loss.item()
 
         # Calculate average training loss and accuracy
         avg_train_loss = train_loss / len(train_loader)
         train_accuracy = 100 * correct / total
-
+        #scheduler.step()
         return avg_train_loss, train_accuracy
 
 def validate(cnn1d_model, valid_loader, loss_function):
 
     cnn1d_model.eval()  # Set model to evaluation mode
-    val_loss = 0
+    val_loss = 0.0
     correct = 0
     total = 0
 
     with torch.no_grad():
-        for x, y in valid_loader:
-            outputs = cnn1d_model(x).squeeze()
-            loss = loss_function(outputs, y.float())
+        for data, labels, _ in valid_loader:
+
+            labels = labels.float()
+
+            outputs = cnn1d_model(data).squeeze()
+            loss = loss_function(outputs, labels)
 
             val_loss += loss.item()
 
             predicted = (outputs >= 0.5).float()
-            correct += (predicted == y).sum().item()
-            total += y.size(0)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
 
     avg_val_loss = val_loss / len(valid_loader)
     val_accuracy = 100 * correct / total
@@ -68,7 +72,7 @@ def evaluate_model(model, data_loader):
     predicted_probs = []  # For ROC AUC
 
     with torch.no_grad():  # Don't compute gradients for inference
-        for inputs, labels in data_loader:
+        for inputs, labels, _ in data_loader:
 
             outputs = model(inputs)
 
@@ -99,8 +103,8 @@ def get_report_of_results(eval_type, accuracy, precision, recall, f1, confusion,
     print(f"Recall: {recall:.4f}")
     print(f"F1 Score: {f1:.4f}")
 
-    print("Confusion Matrix:")
-    print(confusion)
+    # print("Confusion Matrix:")
+    # print(confusion)
 
     print(f"{eval_type} ROC AUC Score: {roc_auc:.4f}")
 

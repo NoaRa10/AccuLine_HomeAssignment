@@ -14,7 +14,7 @@ class Cnn1dModel(nn.Module):
             nn.Conv1d(in_channels=25, out_channels=50, kernel_size=3),
             nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Dropout(0.2),
+            nn.Dropout(0.3),
             nn.MaxPool1d(2),
 
             nn.Conv1d(in_channels=50, out_channels=75, kernel_size=3),
@@ -22,8 +22,9 @@ class Cnn1dModel(nn.Module):
             nn.ReLU(),
             nn.MaxPool1d(2),
 
+            nn.AdaptiveMaxPool1d(1), #Using Global Average Pooling instead to reduce the number of parameters
             nn.Flatten(),
-            nn.Linear(in_features=75*185, out_features=512),
+            nn.Linear(in_features=75, out_features=512),
 
             nn.Dropout(0.3),
             nn.ReLU(),

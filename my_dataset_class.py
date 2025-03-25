@@ -12,8 +12,9 @@ class MyDataset(Dataset):
 
     def __getitem__(self, idx):
         # Get the ECG signal and label from the dataframe
-        signal = self.dataframe.iloc[idx]['ECG_Signal']
+        signal = self.dataframe.iloc[idx]['sample']
         label = self.dataframe.iloc[idx]['label']
+        sample_id = self.dataframe.iloc[idx]['sample_id']
 
         # Ensure the signal is a numpy array
         signal = np.array(signal)
@@ -24,5 +25,6 @@ class MyDataset(Dataset):
         # Convert to tensor
         signal = torch.tensor(signal, dtype=torch.float32)
         label = torch.tensor(label, dtype=torch.long)
+        sample_id = torch.tensor(sample_id, dtype=torch.long)
 
-        return signal, label
+        return signal, label, sample_id

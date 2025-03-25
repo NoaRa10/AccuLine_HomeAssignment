@@ -26,7 +26,7 @@ def add_ecg_data_to_csv(data_file, ecg_folder, file_type, fs):
     - ecg_folder: Path to the folder containing the .mat or .txt files.
     """
     # Add a new column for the extracted ECG data
-    data_file["ECG_Signal"] = None
+    data_file["sample"] = None
     acceptable_min_duration_sec = 5
     acceptable_length = acceptable_min_duration_sec * fs
 
@@ -55,14 +55,14 @@ def add_ecg_data_to_csv(data_file, ecg_folder, file_type, fs):
 
         current_signal = current_signal.tolist()
         if len(current_signal) >= acceptable_length:
-            data_file.at[index, "ECG_Signal"] = current_signal#.tolist()  # Convert to list for CSV compatibility
+            data_file.at[index, "sample"] = current_signal#.tolist()  # Convert to list for CSV compatibility
 
     return data_file
 
 def resample_ecg_signal(ecg_signal, original_fs, target_fs):
     """Resamples the given ECG signal from original_fs to new_fs.
     Parameters:
-    - ecg_signal: signal to resample.
+    - sample: signal to resample.
     - original_fs: original sampling frequency in Hz.
     - target_fs: desired sampling frequency in Hz.
     """
@@ -82,13 +82,16 @@ def get_concat_data(data_path1, data_path2):
     """
 
     # Read data frames and change signal format to np array
-    df1 = pd.read_csv(data_path1, usecols=["label", "ECG_Signal"])
-    df1["ECG_Signal"] = df1["ECG_Signal"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=','))
-    df2 = pd.read_csv(data_path2, usecols=["label", "ECG_Signal"])
-    df2["ECG_Signal"] = df2["ECG_Signal"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=' '))
+    df1 = pd.read_csv(data_path1, usecols=["label", "sample"])
+    df1["sample"] = df1["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=','))
+    df2 = pd.read_csv(data_path2, usecols=["label", "sample"])
+    df2["sample"] = df2["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=' '))
 
     # Concatenate the two DataFrames
     df = pd.concat([df1, df2], ignore_index=True)
+
+    # Add sample id for proper training-validation split after segmentation
+    df['sample_id'] = df.index
 
     return df
 
@@ -104,14 +107,15 @@ def segment_ecg_signal_to_equal_length(df, sampling_freq=300, segment_size_secon
     segments = []
 
     for index, row in df.iterrows():
-        current_signal = row["ECG_Signal"]
+        current_signal = row["sample"]
         current_label = row["label"]
+        current_id = row["sample_id"]
         current_label = 0 if current_label == 'N' else 1  # Convert 'N' to 0 (noisy), 'C' to 1 (clean)
 
         for i in range(0, len(current_signal), segment_length):
             segment = current_signal[i:i + segment_length]
             if len(segment) == segment_length:
-                segments.append({"ECG_Signal": segment, "label": current_label})
+                segments.append({"sample": segment, "label": current_label, "sample_id": current_id})
 
     segmented_df = pd.DataFrame(segments)
     return segmented_df
@@ -137,6 +141,7 @@ def split_data_to_train_and_validation(df):
     """Prepare the data frames for training and validation by shuffling the data and divide
         Parameters:
         df: full data frame of segmented ECG signal
+        !!!! Was in use in previous version, no longer used.
     """
     # Shuffle the dataset
     shuffle_df = df.sample(frac=1, random_state=42).reset_index(drop=True)  # random_state for reproducibility

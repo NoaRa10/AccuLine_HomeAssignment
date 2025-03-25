@@ -32,8 +32,8 @@ ecg_folder = "AccuLine_HomeAssignment/training2011"
 data_file = add_ecg_data_to_csv(data_file_sorted, ecg_folder, file_type=".txt", fs=500)
 
 # Resample the signal
-data_file.rename(columns={data_file.columns[-1]: "ECG_Signal_original"}, inplace=True)
-data_file["ECG_Signal"] = data_file["ECG_Signal_original"].apply(lambda x: resample_ecg_signal(x, original_fs=500, new_fs=300))
+data_file.rename(columns={data_file.columns[-1]: "sample_original"}, inplace=True)
+data_file["sample"] = data_file["sample_original"].apply(lambda x: resample_ecg_signal(x, original_fs=500, target_fs=300))
 
 # Save the updated CSV
 data_file.to_csv(output_csv_path, index=False)
