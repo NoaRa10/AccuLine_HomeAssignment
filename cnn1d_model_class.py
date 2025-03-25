@@ -22,7 +22,7 @@ class Cnn1dModel(nn.Module):
             nn.ReLU(),
             nn.MaxPool1d(2),
 
-            nn.AdaptiveMaxPool1d(1), #Using Global Average Pooling instead to reduce the number of parameters
+            nn.AdaptiveMaxPool1d(1), #Using Global Average Pooling to reduce the number of parameters
             nn.Flatten(),
             nn.Linear(in_features=75, out_features=512),
 

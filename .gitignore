@@ -2,3 +2,13 @@
 *.csv
 *.pdf
 *.docx
+
+test_data_preprocess.py
+
+.idea/
+__pycache__/
+cnn_d1_helper_function_before_k_cross_valid.py
+test/
+training2011/
+training2017/
+~WRL1905.tmp
