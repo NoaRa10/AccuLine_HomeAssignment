@@ -5,9 +5,9 @@ import numpy as np
 from ecg_processing_helper_functions import add_ecg_data_to_csv, resample_ecg_signal
 
 # define the required paths
-noise_path = "AccuLine_HomeAssignment/training2011/RECORDS-unacceptable.txt"
-clean_path = "AccuLine_HomeAssignment/training2011/RECORDS-acceptable.txt"
-output_csv_path = "AccuLine_HomeAssignment/2011_data.csv"
+noise_path = "training2011/RECORDS-unacceptable.txt"
+clean_path = "training2011/RECORDS-acceptable.txt"
+output_csv_path = "2011_data.csv"
 
 # Load the data from the text files
 noise_data = np.loadtxt(noise_path, dtype=str)
@@ -28,7 +28,7 @@ data_file_sorted.to_csv(output_csv_path, index=False)
 
 print(f"Sorted CSV saved to {output_csv_path}")
 
-ecg_folder = "AccuLine_HomeAssignment/training2011"
+ecg_folder = "training2011"
 data_file = add_ecg_data_to_csv(data_file_sorted, ecg_folder, file_type=".txt", fs=500)
 
 # Resample the signal

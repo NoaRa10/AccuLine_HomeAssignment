@@ -6,12 +6,12 @@ data_type = 'test' #'train-valid'
 
 # define the required paths
 if data_type == 'train-valid':
-    csv_path = "C:/Users/noara/AccuLine_HomeAssignment/training2017/REFERENCE-original.csv"
-    mat_folder = "C:/Users/noara/AccuLine_HomeAssignment/training2017"
-    output_csv_path = "C:/Users/noara/AccuLine_HomeAssignment/2017_data.csv"
+    csv_path = "training2017/REFERENCE-original.csv"
+    mat_folder = "training2017"
+    output_csv_path = "2017_data.csv"
 elif data_type == 'test':
-    csv_path = "C:/Users/noara/AccuLine_HomeAssignment/test/REFERENCE.csv"
-    mat_folder = "C:/Users/noara/AccuLine_HomeAssignment/test"
-    output_csv_path = "C:/Users/noara/AccuLine_HomeAssignment/2017_test_data.csv"
+    csv_path = "test/REFERENCE.csv"
+    mat_folder = "test"
+    output_csv_path = "2017_test_data.csv"
 
 save_2017_data(csv_path, mat_folder, output_csv_path)
