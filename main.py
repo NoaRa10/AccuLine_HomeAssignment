@@ -7,14 +7,15 @@ import torch.optim as optim
 import torch.nn as nn
 import pandas as pd
 from sklearn.model_selection import GroupKFold
+from data_preprocess_functions import *
 
 def main():
 
-    save_path = "C:/Users/noara/AccuLine_HomeAssignment/" #"AccuLine_HomeAssignment/"
-    data_path_2017 = f"{save_path}/2017_data.csv"
-    data_path_2011 = f"{save_path}/2011_data.csv"
+    # preprocess data and get the two dataframes (2011 and 2017)
+    data_2011 = preprocess_2011_data()
+    data_2017 = preprocess_2017_data("train-valid")
 
-    concat_df = get_concat_data(data_path_2017, data_path_2011)
+    concat_df = get_concat_data(input1=data_2011, input2=data_2017, input_type="data")
     segmented_df = segment_ecg_signal_to_equal_length(concat_df, sampling_freq=300, segment_size_seconds=5)
 
     # Define batch size and group ratio
@@ -110,9 +111,7 @@ def main():
     print(f"Validation F1 Score: {np.mean(fold_results['valid_f1']):.4f} ± {np.std(fold_results['valid_f1']):.4f}")
 
     # test model performance
-    test_path = f"{save_path}/2017_test_data.csv"
-    test_df = pd.read_csv(test_path, usecols=["label", "sample"])
-    test_df["sample"] = test_df["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=','))
+    test_df = preprocess_2017_data("test")
     test_df['sample_id'] = test_df.index
     test_segmented_df = segment_ecg_signal_to_equal_length(test_df, sampling_freq=300, segment_size_seconds=5)
     test_balanced_df = balance_the_data(test_segmented_df, n_to_c_ratio=n_to_c_ratio)
@@ -128,7 +127,7 @@ def main():
 
     # Add the predictions as a new column to the test DataFrame
     test_balanced_df['predicted_label'] = ts_predicted_labels
-    test_balanced_df.to_csv(f"{save_path}/2017_test_data_including_prediction.csv", index=False)
+    test_balanced_df.to_csv("2017_test_data_including_prediction.csv", index=False)
 
 if __name__ == "__main__":
     main()

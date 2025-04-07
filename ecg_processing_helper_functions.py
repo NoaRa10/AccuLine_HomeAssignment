@@ -18,6 +18,7 @@ def save_2017_data(csv_path, mat_folder, output_csv_path):
 
     # Save the updated CSV
     data_file.to_csv(output_csv_path, index=False)
+    return data_file
 
 def add_ecg_data_to_csv(data_file, ecg_folder, file_type, fs):
     """Adds ECG data from .mat file or .txt to a DataFrame and saves it as a CSV.
@@ -53,7 +54,7 @@ def add_ecg_data_to_csv(data_file, ecg_folder, file_type, fs):
             except Exception as e:
                 print(f"Error loading {sample_name}: {e}")
 
-        current_signal = current_signal.tolist()
+        #current_signal = current_signal.tolist()
         if len(current_signal) >= acceptable_length:
             data_file.at[index, "sample"] = current_signal#.tolist()  # Convert to list for CSV compatibility
 
@@ -74,18 +75,23 @@ def resample_ecg_signal(ecg_signal, original_fs, target_fs):
         print(f"Error resampling signal: {e}")
         return None
 
-def get_concat_data(data_path1, data_path2):
+def get_concat_data(input1, input2, input_type):
     """Combine two data frames: 2017 and 2011 data
     Parameters:
-    - data_path1: path for 2017 date
-    - data_path2: path for 2011 date
+    - input1: path for 2017 date or data frame for 2011
+    - input2: path for 2011 date or data frame for 2017
+    - input_type: "path" or "data" - specify how to combine data frames - using paths or dataframes
     """
 
-    # Read data frames and change signal format to np array
-    df1 = pd.read_csv(data_path1, usecols=["label", "sample"])
-    df1["sample"] = df1["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=','))
-    df2 = pd.read_csv(data_path2, usecols=["label", "sample"])
-    df2["sample"] = df2["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=' '))
+    if input_type == "path":
+        # Read data frames and change signal format to np array
+        df1 = pd.read_csv(input1, usecols=["label", "sample"])
+        df1["sample"] = df1["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=','))
+        df2 = pd.read_csv(input2, usecols=["label", "sample"])
+        df2["sample"] = df2["sample"].apply(lambda x: np.fromstring(x[1:-1], dtype=np.float32, sep=' '))
+    elif input_type == "data":
+        df1 = input1[["sample", "label"]]
+        df2 = input2[["sample", "label"]]
 
     # Concatenate the two DataFrames
     df = pd.concat([df1, df2], ignore_index=True)
